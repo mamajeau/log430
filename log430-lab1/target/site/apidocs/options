@@ -1,0 +1,22 @@
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'C:/Users/maaj/Desktop/log430/log430-lab1/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2017. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Users/maaj/Desktop/log430/log430-lab1/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'log430-lab1 1.0.0 API'
+-linkoffline
+'http://docs.oracle.com/javase/8/docs/api' 'C:/Users/maaj/Desktop/log430/log430-lab1/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'log430-lab1 1.0.0 API'
