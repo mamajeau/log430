@@ -25,6 +25,7 @@ public class ATMTest {
 	ATM atm = new ATM(42, "Gordon College", "First National Bank of Podunk", null);
 	Card card = new Card(1);
 	Transaction transaction;
+        //It's not used in the code
 	Session session = null;
 	int validPin = 42;
 	int invalidPin = 2903;
