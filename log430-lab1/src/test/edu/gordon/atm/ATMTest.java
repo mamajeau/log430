@@ -2,6 +2,8 @@ package edu.gordon.atm;
 
 import edu.gordon.atm.physical.CardReader;
 import edu.gordon.atm.physical.CashDispenser;
+import edu.gordon.atm.transaction.Deposit;
+import edu.gordon.atm.transaction.Inquiry;
 import edu.gordon.atm.transaction.Transaction;
 import edu.gordon.atm.transaction.Withdrawal;
 import edu.gordon.banking.Card;
@@ -75,7 +77,8 @@ public class ATMTest {
 	@Test
 	public void depositTest()
 	{
-		Deposit deposit = new Deposit();
+		Deposit deposit=new  Deposit(atm, session, card, invalidPin);
+                
 	}
 
 	@Test
@@ -87,7 +90,10 @@ public class ATMTest {
 	@Test
 	public void balanceTest()
 	{
-		;
+		Inquiry inquiry=new Inquiry (atm, session, card, invalidPin);
+                inquiry.setFrom(0);
+		
+                
 	}
 
 }
