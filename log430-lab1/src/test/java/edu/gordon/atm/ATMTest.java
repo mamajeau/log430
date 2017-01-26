@@ -1,5 +1,6 @@
 package edu.gordon.atm;
 
+import edu.gordon.atm.physical.CustomerConsole;
 import edu.gordon.atm.transaction.Transaction;
 import edu.gordon.banking.Balances;
 import edu.gordon.banking.Card;
@@ -67,37 +68,60 @@ public class ATMTest {
 		// The ATM's available cash is also the ATM's initial amount - the withdrawn amount
 		Assert.assertEquals(atm.getCashDispenser().getCashOnHand().getCents(), 
 				new Money(INITIAL_ATM_TOTAL).getCents() - amountToWithdraw.getCents());
-		
+	
 	}
+        
+        @Test
+	public void tooMuchWithdrawalTest() throws Transaction.CardRetained
+        {
+            init();
+		
+		// Successful withdrawal test
+		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
+                Money tooBigAmout= new Money(500);
+            //Withdrawal more then the limit
+                message = new Message(Message.WITHDRAWAL, card, VALID_PIN, serialNumber++, 0, -1, tooBigAmout);
+		status = bank.handleMessage(message, balances);
+                Assert.assertFalse(status.isSuccess());
+        }
 
 	@Test
-	public void depositTest()
+	public void depositTest() throws CustomerConsole.Cancelled
 	{
             
-            //il manque la verification de lnveloppe
 		init();
                 Money amountToDeposit = new Money(20);
 		message = new Message(Message.COMPLETE_DEPOSIT, card, VALID_PIN, serialNumber++, -1, 0, amountToDeposit);
 		status = bank.handleMessage(message, balances);
                 
+                //Accepting envelop
+                
+                
+                //Accepting money
                 //Test that the message had pass
                 Assert.assertTrue(status.isSuccess());
                 // The account's balance total is now the account's initial amount - the withdrawn amount
 		Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents() + amountToDeposit.getCents());
 	}
 
+        @Test
+	public void badAcounttransferTest()
+        {
+            Money amountToTransfer = new Money(20);
+            init();              
+            //Tests for checking account
+            message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 0, amountToTransfer);
+            status = bank.handleMessage(message, balances);
+
+            // The transaction fail to send to itself
+            Assert.assertFalse(status.isSuccess());               
+        }
+        
 	@Test
 	public void transferTest()
 	{
                 Money amountToTransfer = new Money(20);
-		init();              
-                //Tests for checking account
-                message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 0, amountToTransfer);
-                status = bank.handleMessage(message, balances);
-        
-                // The transaction fail to send to itself
-                Assert.assertFalse(status.isSuccess());               
-                
+		    
                 init();              
                 //Check if the transfer in good deposit then withdrawal
                 message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 1, amountToTransfer);
@@ -112,7 +136,7 @@ public class ATMTest {
 	}
 
 	@Test
-	public void balanceTest()
+	public void checkingAccBalanceTest()
 	{
 		init();              
                 //Tests for checking account
@@ -122,8 +146,12 @@ public class ATMTest {
                 Assert.assertTrue(status.isSuccess());               
                 //Check if the balance fit with the total of the account 
                 Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents());
-                
-                init();
+	}
+        
+        @Test
+	public void savingAccBalanceTest()
+        {
+            init();
                 //Tests for saving account
                 message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 1, -1, null);
                 status = bank.handleMessage(message, balances);
@@ -131,6 +159,6 @@ public class ATMTest {
                 Assert.assertTrue(status.isSuccess());               
                 //Check if the balance fit with the total of the account 
                 Assert.assertEquals(balances.getTotal().getCents(),SAVING_ACC_TOTAL.getCents());
-	}
+        }
 
 }
