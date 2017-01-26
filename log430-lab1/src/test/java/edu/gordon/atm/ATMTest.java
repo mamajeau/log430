@@ -68,21 +68,47 @@ public class ATMTest {
 		Assert.assertEquals(atm.getCashDispenser().getCashOnHand().getCents(), 
 				new Money(INITIAL_ATM_TOTAL).getCents() - amountToWithdraw.getCents());
 		
-		init();
-		
-		// ...
 	}
 
 	@Test
 	public void depositTest()
 	{
+            
+            //il manque la verification de lnveloppe
 		init();
+                Money amountToDeposit = new Money(20);
+		message = new Message(Message.COMPLETE_DEPOSIT, card, VALID_PIN, serialNumber++, -1, 0, amountToDeposit);
+		status = bank.handleMessage(message, balances);
+                
+                //Test that the message had pass
+                Assert.assertTrue(status.isSuccess());
+                // The account's balance total is now the account's initial amount - the withdrawn amount
+		Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents() + amountToDeposit.getCents());
 	}
 
 	@Test
 	public void transferTest()
 	{
-		init();
+                Money amountToTransfer = new Money(20);
+		init();              
+                //Tests for checking account
+                message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 0, amountToTransfer);
+                status = bank.handleMessage(message, balances);
+        
+                // The transaction fail to send to itself
+                Assert.assertFalse(status.isSuccess());               
+                
+                init();              
+                //Check if the transfer in good deposit then withdrawal
+                message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 1, amountToTransfer);
+                 status = bank.handleMessage(message, balances);
+                Assert.assertTrue(status.isSuccess());               
+                Assert.assertEquals(balances.getTotal().getCents(),SAVING_ACC_TOTAL.getCents()+amountToTransfer.getCents());
+                
+                //Check the withdrawal had been done
+                message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
+                status = bank.handleMessage(message, balances);
+                Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents()-amountToTransfer.getCents());
 	}
 
 	@Test
