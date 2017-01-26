@@ -51,8 +51,7 @@ public class ATMTest {
 	@Test
 	public void withdrawalTest() throws Transaction.CardRetained
 	{
-		init();
-		
+		init();	
 		// Successful withdrawal test
 		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
 		Money amountToWithdraw = new Money(20);
@@ -62,6 +61,7 @@ public class ATMTest {
 		
 		// The transaction succeeded
 		Assert.assertTrue(status.isSuccess());
+                
 		// The account's balance total is now the account's initial amount - the withdrawn amount
 		Assert.assertEquals(balances.getTotal().getCents(), 
 				INITIAL_ACC_TOTAL.getCents() - amountToWithdraw.getCents());
@@ -70,13 +70,14 @@ public class ATMTest {
 				new Money(INITIAL_ATM_TOTAL).getCents() - amountToWithdraw.getCents());
 	
 	}
-        
+       
+               
         @Test
 	public void tooMuchWithdrawalTest() throws Transaction.CardRetained
         {
             init();
 		
-		// Successful withdrawal test
+		
 		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
                 Money tooBigAmout= new Money(500);
             //Withdrawal more then the limit
