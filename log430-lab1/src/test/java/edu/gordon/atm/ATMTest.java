@@ -7,6 +7,7 @@ import edu.gordon.banking.Message;
 import edu.gordon.banking.Money;
 import edu.gordon.banking.Status;
 import edu.gordon.simulation.SimulatedBank;
+import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,6 +23,8 @@ public class ATMTest {
 	private final int CARD_NUMBER = 1;
 	private final int VALID_PIN = 42;
 	private final Money INITIAL_ACC_TOTAL = new Money(100);
+        private final Money SAVING_ACC_TOTAL = new Money(1000);
+        private final Money MARKET_ACC_TOTAL = new Money(5000);
 	private final int INVALID_PIN = 2903;
 	private final int CHECKING_ACC = 0;
 	private final int SAVINGS_ACC = 1;
@@ -68,7 +71,6 @@ public class ATMTest {
 		init();
 		
 		// ...
-		
 	}
 
 	@Test
@@ -86,7 +88,23 @@ public class ATMTest {
 	@Test
 	public void balanceTest()
 	{
-		init();
+		init();              
+                //Tests for checking account
+                message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
+                status = bank.handleMessage(message, balances);
+                // The transaction succeeded
+                Assert.assertTrue(status.isSuccess());               
+                //Check if the balance fit with the total of the account 
+                Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents());
+                
+                init();
+                //Tests for saving account
+                message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 1, -1, null);
+                status = bank.handleMessage(message, balances);
+                // The transaction succeeded
+                Assert.assertTrue(status.isSuccess());               
+                //Check if the balance fit with the total of the account 
+                Assert.assertEquals(balances.getTotal().getCents(),SAVING_ACC_TOTAL.getCents());
 	}
 
 }
