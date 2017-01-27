@@ -8,7 +8,6 @@ import edu.gordon.banking.Message;
 import edu.gordon.banking.Money;
 import edu.gordon.banking.Status;
 import edu.gordon.simulation.SimulatedBank;
-import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +15,7 @@ import org.junit.Test;
  * Created by maaj on 1/13/2017.
  */
 public class ATMTest {
-	
+
 	private final int ATM_ID = 42;
 	private final int INITIAL_ATM_TOTAL = 200;
 	private final String PLACE_NAME = "Gordon College";
@@ -24,22 +23,22 @@ public class ATMTest {
 	private final int CARD_NUMBER = 1;
 	private final int VALID_PIN = 42;
 	private final Money INITIAL_ACC_TOTAL = new Money(100);
-        private final Money SAVING_ACC_TOTAL = new Money(1000);
-        private final Money MARKET_ACC_TOTAL = new Money(5000);
+	private final Money SAVING_ACC_TOTAL = new Money(1000);
+	private final Money MARKET_ACC_TOTAL = new Money(5000);
 	private final int INVALID_PIN = 2903;
 	private final int CHECKING_ACC = 0;
 	private final int SAVINGS_ACC = 1;
 	private final int MONEY_MARKET_ACC = 2;
-	
+
 	private static int serialNumber = 1;
-	
+
 	private SimulatedBank bank;
 	private ATM atm;
 	private Card card;
 	private Message message;
 	private Status status;
 	private Balances balances;
-	
+
 	private void init() {
 		serialNumber++;
 		bank = new SimulatedBank();
@@ -49,117 +48,132 @@ public class ATMTest {
 	}
 	
 	@Test
+	public void invalidPinTest() {
+		init();
+		
+		// Wrong PIN test
+		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
+		Money amountToWithdraw = new Money(20);
+		message = new Message(Message.WITHDRAWAL, card, INVALID_PIN, serialNumber++, 0, -1, amountToWithdraw);
+		status = bank.handleMessage(message, balances);
+		
+		Assert.assertTrue(status.isInvalidPIN());
+		Assert.assertFalse(status.isSuccess());
+	}
+
+	@Test
 	public void withdrawalTest() throws Transaction.CardRetained
 	{
 		init();	
+		
 		// Successful withdrawal test
 		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
 		Money amountToWithdraw = new Money(20);
 		message = new Message(Message.WITHDRAWAL, card, VALID_PIN, serialNumber++, 0, -1, amountToWithdraw);
 		status = bank.handleMessage(message, balances);
 		atm.getCashDispenser().getCashOnHand().subtract(amountToWithdraw);
-		
+
 		// The transaction succeeded
 		Assert.assertTrue(status.isSuccess());
-                
+
 		// The account's balance total is now the account's initial amount - the withdrawn amount
 		Assert.assertEquals(balances.getTotal().getCents(), 
 				INITIAL_ACC_TOTAL.getCents() - amountToWithdraw.getCents());
 		// The ATM's available cash is also the ATM's initial amount - the withdrawn amount
 		Assert.assertEquals(atm.getCashDispenser().getCashOnHand().getCents(), 
 				new Money(INITIAL_ATM_TOTAL).getCents() - amountToWithdraw.getCents());
-	
 	}
-       
-               
-        @Test
+
+
+	@Test
 	public void tooMuchWithdrawalTest() throws Transaction.CardRetained
-        {
-            init();
-		
-		
+	{
+		init();
+
 		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
-                Money tooBigAmout= new Money(500);
-            //Withdrawal more then the limit
-                message = new Message(Message.WITHDRAWAL, card, VALID_PIN, serialNumber++, 0, -1, tooBigAmout);
+		Money tooBigAmount = new Money(500);
+		//Withdrawal more then the limit
+		message = new Message(Message.WITHDRAWAL, card, VALID_PIN, serialNumber++, 0, -1, tooBigAmount);
 		status = bank.handleMessage(message, balances);
-                Assert.assertFalse(status.isSuccess());
-        }
+		Assert.assertFalse(status.isSuccess());
+	}
 
 	@Test
 	public void depositTest() throws CustomerConsole.Cancelled
 	{
-            
 		init();
-                Money amountToDeposit = new Money(20);
+		
+		Money amountToDeposit = new Money(20);
 		message = new Message(Message.COMPLETE_DEPOSIT, card, VALID_PIN, serialNumber++, -1, 0, amountToDeposit);
 		status = bank.handleMessage(message, balances);
-                
-                //Accepting envelop
-                
-                
-                //Accepting money
-                //Test that the message had pass
-                Assert.assertTrue(status.isSuccess());
-                // The account's balance total is now the account's initial amount - the withdrawn amount
-		Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents() + amountToDeposit.getCents());
+
+		// Accepting money
+		// Test that the message had pass
+		Assert.assertTrue(status.isSuccess());
+		// The account's balance total is now the account's initial amount - the withdrawn amount
+		Assert.assertEquals(balances.getTotal().getCents(), INITIAL_ACC_TOTAL.getCents() + amountToDeposit.getCents());
 	}
 
-        @Test
-	public void badAcounttransferTest()
-        {
-            Money amountToTransfer = new Money(20);
-            init();              
-            //Tests for checking account
-            message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 0, amountToTransfer);
-            status = bank.handleMessage(message, balances);
+	@Test
+	public void badAcountTransferTest()
+	{
+		init();
+		
+		Money amountToTransfer = new Money(20);
+		
+		// Tests for checking account
+		message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 0, amountToTransfer);
+		status = bank.handleMessage(message, balances);
 
-            // The transaction fail to send to itself
-            Assert.assertFalse(status.isSuccess());               
-        }
-        
+		// The transaction failed to send to itself
+		Assert.assertFalse(status.isSuccess());               
+	}
+
 	@Test
 	public void transferTest()
 	{
-                Money amountToTransfer = new Money(20);
-		    
-                init();              
-                //Check if the transfer in good deposit then withdrawal
-                message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 1, amountToTransfer);
-                 status = bank.handleMessage(message, balances);
-                Assert.assertTrue(status.isSuccess());               
-                Assert.assertEquals(balances.getTotal().getCents(),SAVING_ACC_TOTAL.getCents()+amountToTransfer.getCents());
-                
-                //Check the withdrawal had been done
-                message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
-                status = bank.handleMessage(message, balances);
-                Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents()-amountToTransfer.getCents());
+		init();  
+		
+		Money amountToTransfer = new Money(20);
+		
+		// Check if the transfer in good deposit then withdrawal
+		message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 1, amountToTransfer);
+		status = bank.handleMessage(message, balances);
+		Assert.assertTrue(status.isSuccess());               
+		Assert.assertEquals(balances.getTotal().getCents(), SAVING_ACC_TOTAL.getCents() + amountToTransfer.getCents());
+
+		// Check the withdrawal has been done
+		message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
+		status = bank.handleMessage(message, balances);
+		Assert.assertEquals(balances.getTotal().getCents(), INITIAL_ACC_TOTAL.getCents() - amountToTransfer.getCents());
 	}
 
 	@Test
 	public void checkingAccBalanceTest()
 	{
-		init();              
-                //Tests for checking account
-                message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
-                status = bank.handleMessage(message, balances);
-                // The transaction succeeded
-                Assert.assertTrue(status.isSuccess());               
-                //Check if the balance fit with the total of the account 
-                Assert.assertEquals(balances.getTotal().getCents(),INITIAL_ACC_TOTAL.getCents());
+		init();
+		
+		// Tests for checking account
+		message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
+		status = bank.handleMessage(message, balances);
+		// The transaction succeeded
+		Assert.assertTrue(status.isSuccess());               
+		// Check if the balance fit with the total of the account 
+		Assert.assertEquals(balances.getTotal().getCents(), INITIAL_ACC_TOTAL.getCents());
 	}
-        
-        @Test
+
+	@Test
 	public void savingAccBalanceTest()
-        {
-            init();
-                //Tests for saving account
-                message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 1, -1, null);
-                status = bank.handleMessage(message, balances);
-                // The transaction succeeded
-                Assert.assertTrue(status.isSuccess());               
-                //Check if the balance fit with the total of the account 
-                Assert.assertEquals(balances.getTotal().getCents(),SAVING_ACC_TOTAL.getCents());
-        }
+	{
+		init();
+		
+		//Tests for saving account
+		message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 1, -1, null);
+		status = bank.handleMessage(message, balances);
+		// The transaction succeeded
+		Assert.assertTrue(status.isSuccess());               
+		//Check if the balance fit with the total of the account 
+		Assert.assertEquals(balances.getTotal().getCents(), SAVING_ACC_TOTAL.getCents());
+	}
 
 }
