@@ -62,7 +62,7 @@ public class ATMTest {
 	}
 
 	@Test
-	public void withdrawalTest() throws Transaction.CardRetained
+	public void withdrawalTest() 
 	{
 		init();	
 		
@@ -86,7 +86,7 @@ public class ATMTest {
 
 
 	@Test
-	public void tooMuchWithdrawalTest() throws Transaction.CardRetained
+	public void tooMuchWithdrawalTest()
 	{
 		init();
 
