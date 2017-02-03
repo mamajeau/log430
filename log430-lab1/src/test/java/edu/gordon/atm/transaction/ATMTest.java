@@ -1,14 +1,21 @@
-package edu.gordon.atm;
+package edu.gordon.atm.transaction;
 
-import edu.gordon.atm.ATM;
-import edu.gordon.atm.physical.CustomerConsole;
-import edu.gordon.transaction.Transaction;
+import edu.gordon.atm.CustomerConsole;
+import edu.gordon.atm.CustomerConsole;
+import edu.gordon.atm.TransactionBridge;
+import edu.gordon.atm.transaction.ATM;
+import edu.gordon.atm.transaction.Transaction;
 import edu.gordon.banking.Balances;
 import edu.gordon.banking.Card;
 import edu.gordon.banking.Message;
 import edu.gordon.banking.Money;
 import edu.gordon.banking.Status;
 import edu.gordon.atm.simulation.SimulatedBank;
+import edu.gordon.banking.Balances;
+import edu.gordon.banking.Card;
+import edu.gordon.banking.Message;
+import edu.gordon.banking.Money;
+import edu.gordon.banking.Status;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,7 +40,7 @@ public class ATMTest {
 
 	private static int serialNumber = 1;
 
-	private SimulatedBank bank;
+	private TransactionBridge bridge;
 	private ATM atm;
 	private Card card;
 	private Message message;
@@ -42,7 +49,8 @@ public class ATMTest {
 
 	private void init() {
 		serialNumber++;
-		bank = new SimulatedBank();
+                
+		
 		atm = new ATM(ATM_ID, PLACE_NAME, BANK_NAME, null);
 		card = new Card(CARD_NUMBER);
 		balances = new Balances();
@@ -56,7 +64,7 @@ public class ATMTest {
 		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
 		Money amountToWithdraw = new Money(20);
 		message = new Message(Message.WITHDRAWAL, card, INVALID_PIN, serialNumber++, 0, -1, amountToWithdraw);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		
 		Assert.assertTrue(status.isInvalidPIN());
 		Assert.assertFalse(status.isSuccess());
@@ -71,7 +79,7 @@ public class ATMTest {
 		atm.getCashDispenser().setInitialCash(new Money(INITIAL_ATM_TOTAL));
 		Money amountToWithdraw = new Money(20);
 		message = new Message(Message.WITHDRAWAL, card, VALID_PIN, serialNumber++, 0, -1, amountToWithdraw);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		atm.getCashDispenser().getCashOnHand().subtract(amountToWithdraw);
 
 		// The transaction succeeded
@@ -95,7 +103,7 @@ public class ATMTest {
 		Money tooBigAmount = new Money(500);
 		//Withdrawal more then the limit
 		message = new Message(Message.WITHDRAWAL, card, VALID_PIN, serialNumber++, 0, -1, tooBigAmount);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		Assert.assertFalse(status.isSuccess());
 	}
 
@@ -106,7 +114,7 @@ public class ATMTest {
 		
 		Money amountToDeposit = new Money(20);
 		message = new Message(Message.COMPLETE_DEPOSIT, card, VALID_PIN, serialNumber++, -1, 0, amountToDeposit);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 
 		// Accepting money
 		// Test that the message had pass
@@ -124,7 +132,7 @@ public class ATMTest {
 		
 		// Tests for checking account
 		message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 0, amountToTransfer);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 
 		// The transaction failed to send to itself
 		Assert.assertFalse(status.isSuccess());               
@@ -139,13 +147,13 @@ public class ATMTest {
 		
 		// Check if the transfer in good deposit then withdrawal
 		message = new Message(Message.TRANSFER, card, VALID_PIN, serialNumber++, 0, 1, amountToTransfer);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		Assert.assertTrue(status.isSuccess());               
 		Assert.assertEquals(balances.getTotal().getCents(), SAVING_ACC_TOTAL.getCents() + amountToTransfer.getCents());
 
 		// Check the withdrawal has been done
 		message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		Assert.assertEquals(balances.getTotal().getCents(), INITIAL_ACC_TOTAL.getCents() - amountToTransfer.getCents());
 	}
 
@@ -156,7 +164,7 @@ public class ATMTest {
 		
 		// Tests for checking account
 		message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 0, -1, null);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		// The transaction succeeded
 		Assert.assertTrue(status.isSuccess());               
 		// Check if the balance fit with the total of the account 
@@ -170,7 +178,7 @@ public class ATMTest {
 		
 		//Tests for saving account
 		message = new Message(Message.INQUIRY, card, VALID_PIN, serialNumber++, 1, -1, null);
-		status = bank.handleMessage(message, balances);
+		status = bridge.handleMessage(message, balances);
 		// The transaction succeeded
 		Assert.assertTrue(status.isSuccess());               
 		//Check if the balance fit with the total of the account 
