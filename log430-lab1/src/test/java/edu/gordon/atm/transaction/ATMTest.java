@@ -50,7 +50,7 @@ public class ATMTest {
 	private void init() {
 		serialNumber++;
                 
-		
+		bridge=new TransactionBridge();
 		atm = new ATM(ATM_ID, PLACE_NAME, BANK_NAME, null);
 		card = new Card(CARD_NUMBER);
 		balances = new Balances();
