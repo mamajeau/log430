@@ -1,13 +1,14 @@
 package edu.gordon.atm;
 
+import edu.gordon.atm.ATM;
 import edu.gordon.atm.physical.CustomerConsole;
-import edu.gordon.atm.transaction.Transaction;
+import edu.gordon.transaction.Transaction;
 import edu.gordon.banking.Balances;
 import edu.gordon.banking.Card;
 import edu.gordon.banking.Message;
 import edu.gordon.banking.Money;
 import edu.gordon.banking.Status;
-import edu.gordon.simulation.SimulatedBank;
+import edu.gordon.atm.simulation.SimulatedBank;
 import org.junit.Assert;
 import org.junit.Test;
 
