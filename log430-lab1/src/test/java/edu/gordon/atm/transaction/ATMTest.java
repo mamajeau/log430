@@ -1,9 +1,9 @@
 package edu.gordon.atm.transaction;
 
+import edu.gordon.atm.ATM;
 import edu.gordon.atm.CustomerConsole;
 import edu.gordon.atm.CustomerConsole;
 import edu.gordon.atm.TransactionBridge;
-import edu.gordon.atm.transaction.ATM;
 import edu.gordon.atm.transaction.Transaction;
 import edu.gordon.banking.Balances;
 import edu.gordon.banking.Card;
